@@ -5,29 +5,19 @@ const cors = require("cors");
 require("dotenv").config();
 
 // routes
-const userAuthRoutes = require("./routes/userAuth.route");
-const vendorAuthRoutes = require("./routes/vendorAuth.route");
-const orderRoutes = require("./routes/orderRoutes");
-const vendorRoutes = require("./routes/customerRoutes");
-const userRoutes = require("./routes/customerRoutes");
-const authRoutes = require("./routes/payment.route");
+const userAuthRoutes = require("./routes/auth.user.route");
+const vendorAuthRoutes = require("./routes/auth.vendor.route");
+const orderRoutes = require("./routes/order.route");
+const vendorRoutes = require("./routes/inventory.route");
+const userRoutes = require("./routes/get.user.route");
+const paymentAuthRoutes = require("./routes/payment.route");
 
 const { PORT, MONGODB_URI, NODE_ENV, ORIGIN } = require("./config");
 const { API_ENDPOINT_NOT_FOUND_ERR, SERVER_ERR } = require("./errors");
 
-const { PORT, NODE_ENV, MONGODB_URI } = require("./config");
-
-app.use(bodyParser.json());
-
 const app = express();
-
-if (NODE_ENV === "development") {
-  const morgan = require("morgan");
-  app.use(morgan("dev"));
-}
-
+app.use(bodyParser.json());
 app.use(express.json());
-
 app.use(
   cors({
     credentials: true,
@@ -35,6 +25,11 @@ app.use(
     optionsSuccessStatus: 200,
   })
 );
+
+if (NODE_ENV === "development") {
+  const morgan = require("morgan");
+  app.use(morgan("dev"));
+}
 
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -48,20 +43,20 @@ app.use(function (req, res, next) {
 
 app.use("/api/userAuth", userAuthRoutes);
 app.use("/api/vendorAuth", vendorAuthRoutes);
-app.use("/api/customer",userRoutes);
+app.use("/api/customer", userRoutes);
 app.use("/api/vendor", vendorRoutes);
-app.use("/orders", orderRoutes);
-app.use("/payment", authRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/payment", paymentAuthRoutes);
 
 // page not found error handling  middleware
 
-app.use("*", (req, res, next) => {
-  const error = {
-    status: 404,
-    message: API_ENDPOINT_NOT_FOUND_ERR,
-  };
-  next(error);
-});
+// app.use("*", (req, res, next) => {
+//   const error = {
+//     status: 404,
+//     message: API_ENDPOINT_NOT_FOUND_ERR,
+//   };
+//   next(error);
+// });
 
 // global error handling middleware
 app.use((err, req, res, next) => {
@@ -79,12 +74,10 @@ app.use((err, req, res, next) => {
 app.get("/", (req, res) => {
   res.status(200).json({
     type: "success",
-    message: "server is up and running",
+    message: "Server is up and running.",
     data: null,
   });
 });
-
-
 
 async function main() {
   try {
