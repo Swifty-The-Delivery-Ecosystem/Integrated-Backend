@@ -8,12 +8,14 @@ require("dotenv").config();
 const userAuthRoutes = require("./routes/userAuth.route");
 const vendorAuthRoutes = require("./routes/vendorAuth.route");
 const orderRoutes = require("./routes/orderRoutes");
+const vendorRoutes = require("./routes/customerRoutes");
+const userRoutes = require("./routes/customerRoutes");
+const authRoutes = require("./routes/payment.route");
 
 const { PORT, MONGODB_URI, NODE_ENV, ORIGIN } = require("./config");
 const { API_ENDPOINT_NOT_FOUND_ERR, SERVER_ERR } = require("./errors");
 
 const { PORT, NODE_ENV, MONGODB_URI } = require("./config");
-const authRoutes = require("./routes/payment.route");
 
 app.use(bodyParser.json());
 
@@ -34,10 +36,22 @@ app.use(
   })
 );
 
+app.use(function (req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  next();
+});
+
 // routes middlewares
 
 app.use("/api/userAuth", userAuthRoutes);
 app.use("/api/vendorAuth", vendorAuthRoutes);
+app.use("/api/customer",userRoutes);
+app.use("/api/vendor", vendorRoutes);
+app.use("/orders", orderRoutes);
+app.use("/payment", authRoutes);
 
 // page not found error handling  middleware
 
@@ -70,9 +84,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use("/orders", orderRoutes);
 
-app.use("/payment", authRoutes);
 
 async function main() {
   try {
